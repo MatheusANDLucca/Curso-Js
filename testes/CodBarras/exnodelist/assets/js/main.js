@@ -1,0 +1,99 @@
+const inputTarefa = document.querySelector('.input-tarela');
+const btnTarefa = document.querySelector('.btn-tarefa');  
+const tarefas = document.querySelector('.tarefas'); 
+
+function criaLi(){
+    const li = document.createElement('li');
+    return li;
+}
+
+inputTarefa.addEventListener('keypress', function(e){
+    if (e.keyCode === 13){
+        if (!inputTarefa.value) return;
+        criaTarefa(inputTarefa.value);
+    }
+});
+
+function limpaInput(){
+    inputTarefa.value = '';
+    inputTarefa.focus();
+}
+
+function criaBotaoApagar(li) {
+    li.innerText+= ' ';
+    const botaoApagar = document.createElement('button');
+    botaoApagar.innerText = 'Apagar';
+    // botaoApagar.classList.add('apagar');
+    botaoApagar.setAttribute('class','apagar');
+    botaoApagar.setAttribute('text','apagar esta tarefa');
+    botaoApagar.style.backgroundImage = "url('../img/bin.png')";
+    li.appendChild(botaoApagar);
+}
+
+function criaTarefa(textoInput){
+    const li = criaLi();
+    li.innerText = textoInput;
+    tarefas.appendChild(li);
+    limpaInput()
+    criaBotaoApagar(li)
+    salvarTarefas();
+}
+
+btnTarefa.addEventListener('click', function(e){
+    if (!inputTarefa.value) return;
+    criaTarefa(inputTarefa.value);
+});
+ 
+document.addEventListener('click', function(e){
+    const el = e.target;
+    if (el.classList.contains('apagar')){
+        el.parentElement.remove();
+        salvarTarefas();
+    }
+});
+
+function salvarTarefas() {
+    const liTarefas = tarefas.querySelectorAll('li');
+    const listaDeTarefas = [];
+
+    for(let tarefa of liTarefas) {
+        let tarefaTexto = tarefa.innerText;
+        tarefaTexto = tarefaTexto.replace('Apagar', '').trim();
+        listaDeTarefas.push(tarefaTexto)
+        const tarefasJSON = JSON.stringify(listaDeTarefas);
+        localStorage.setItem('tarefas', tarefasJSON);
+    }
+}
+
+function adicionaTarefasSalvas() {
+    const tarefas = localStorage.getItem('tarefas');
+    const listaDeTarefas = JSON.parse(tarefas);
+    
+    for(let tarefa of listaDeTarefas){
+        criaTarefa(tarefa);
+    }
+}
+
+function funcao_pdf() {
+    const liTarefas = tarefas.querySelectorAll('li');
+    let pegar_dados =[];
+
+    for(let tarefa of liTarefas) {
+        let tarefaTexto = tarefa.innerText;
+        tarefaTexto = tarefaTexto.replace('Apagar', '<br>').trim();
+        tarefaTexto = tarefaTexto.replace(/,/g, '').trim();
+        pegar_dados.push(tarefaTexto)
+        
+    }
+
+    var janela = window.open('','','width=800,heigth=600');
+    janela.document.write('<html><head>');
+    janela.document.write('<title>PDF</title></head>');
+    janela.document.write('<body>');
+    janela.document.write(pegar_dados);
+    janela.document.write('</body></html>');
+    janela.document.close();
+    janela.print();
+}
+
+adicionaTarefasSalvas()
